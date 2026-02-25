@@ -127,12 +127,16 @@ include_course = st.checkbox("講座案内・プレゼントページを付け�
 
 st.subheader("出力")
 created = date.today()
-base_filename = make_base_filename(client_name or "noname", created)
-filename = st.text_input("保存ファイル名（初期値は作成日ベース）", value=base_filename)
 
-ensure_dir(output_dir)
-final_path = uniquify_path(output_dir, filename)
-st.caption(f"保存先（同名があれば自動で(1)…付与）: {final_path}")
+if demo_mode:
+    st.caption("デモモード：保存先は自動生成（UUID）です。")
+else:
+    base_filename = make_base_filename(client_name or "noname", created)
+    filename = st.text_input("保存ファイル名（初期値は作成日ベース）", value=base_filename)
+
+    ensure_dir(output_dir)
+    final_path = uniquify_path(output_dir, filename)
+    st.caption(f"保存先（同名があれば自動で(1)…付与）: {final_path}")
 
 def validate():
     if not reader_name.strip():
@@ -159,9 +163,9 @@ if st.button("鑑定書PDF生成", type="primary", disabled=bool(err)):
         "include_bonus": bool(include_bonus),
         "include_course": bool(include_course),
         "created": created.isoformat(),
-        # ★先生デモ用は保存先を指定しない（build_pdf.pyがUUIDで自動命名）
-        # "output_pdf_path": final_path,
     }
+    if not demo_mode:
+        payload["output_pdf_path"] = final_path
 
     with st.spinner("PDFを生成しています..."):
         try:
